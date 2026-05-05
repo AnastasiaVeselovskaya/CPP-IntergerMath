@@ -111,8 +111,8 @@ inline int sum(int64_t leftNumber, int64_t rightNumber, double& result)
 
 inline int subtract(int64_t leftNumber, int64_t rightNumber, double& result)
 {
-    if ((rightNumber < 0 && leftNumber < LONG_MIN + rightNumber) ||
-        (rightNumber > 0 && leftNumber > LONG_MAX + rightNumber))
+    if ((rightNumber > 0 && leftNumber < LONG_MIN + rightNumber) ||
+        (rightNumber <  0 && leftNumber > LONG_MAX + rightNumber))
     {
         return -1;
     }
@@ -151,4 +151,3 @@ inline int multiply(int64_t leftNumber, int64_t rightNumber, double& result)
 }
 
 } // namespace integermath
-
