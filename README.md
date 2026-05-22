@@ -1,7 +1,7 @@
 # IntegerMath
 
 Header-only библиотека для выполнения арифметических операций с проверкой переполнения.
-Все операции возвращают статус выполнения и записывают результат в переменную типа `double`.
+Все операции возвращают результат типа `double` или бросают исключение при ошибке.
 Для успешной сборки необходим компилятор с поддержкой C++17 или новее.
 
 ## Пример использования
@@ -9,31 +9,92 @@ Header-only библиотека для выполнения арифметич�
 ```cpp
 #include <integermath/integermath.h>
 #include <cstdio>
+#include <stdexcept>
 
 int main() {
-    double result;
-    int status;
-    
+    integermath::CalculationModule<int> calc;
+
     // Сложение
-    status = integermath::sum(100, 200, result);
-    if (status == 0) printf("100 + 200 = %.0f\n", result);
-    
+    calc.SetLeftNumber(100);
+    calc.SetRightNumber(200);
+    printf("100 + 200 = %.0f\n", calc.sum());
+
     // Умножение с проверкой переполнения
-    status = integermath::multiply(1000000, 3000000, result);
-    if (status == -1) printf("Переполнение!\n");
-    
+    try {
+        calc.SetLeftNumber(1000000);
+        calc.SetRightNumber(3000000);
+        printf("1000000 * 3000000 = %.0f\n", calc.multiply());
+    } catch (const std::overflow_error& e) {
+        printf("Переполнение: %s\n", e.what());
+    }
+
     // Деление
-    integermath::divide(10, 3, result);
-    printf("10 / 3 = %f\n", result);
-    
+    calc.SetLeftNumber(10);
+    calc.SetRightNumber(3);
+    printf("10 / 3 = %f\n", calc.divide());
+
     // Возведение в степень
-    integermath::power(2, 10, result);
-    printf("2^10 = %.0f\n", result);
-    
-    // Факториал
-    integermath::factorial(5, result);
-    printf("5! = %.0f\n", result);
-    
+    calc.SetLeftNumber(2);
+    calc.SetRightNumber(10);
+    printf("2^10 = %.0f\n", calc.power());
+
+    // Факториал (использует только левый операнд)
+    calc.SetLeftNumber(5);
+    printf("5! = %.0f\n", calc.factorial());
+
     return 0;
 }
+```
+
+## API
+
+Все операции реализованы в шаблонном классе `CalculationModule<T>`.
+
+### Установка операндов
+
+```cpp
+void SetLeftNumber(T number);   // левый операнд
+void SetRightNumber(T number);  // правый операнд
+```
+
+### Получение операндов
+
+```cpp
+T getLeftNumber();
+T getRightNumber();
+```
+
+### Арифметические операции
+
+| Метод | Описание | Операнды |
+|---|---|---|
+| `double sum()` | Сложение | left + right |
+| `double subtract()` | Вычитание | left − right |
+| `double multiply()` | Умножение | left × right |
+| `double divide()` | Деление | left / right |
+| `double power()` | Возведение в степень | left ^ right |
+| `double factorial()` | Факториал | left! |
+
+### Исключения
+
+| Исключение | Причина |
+|---|---|
+| `std::overflow_error` | Результат выходит за пределы допустимого диапазона |
+| `std::runtime_error` | Деление на ноль |
+| `std::invalid_argument` | Факториал отрицательного числа |
+
+## Подключение через CMake (FetchContent)
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    integermath
+    GIT_REPOSITORY https://github.com/AnastasiaVeselovskaya/CPP-IntergerMath.git
+    GIT_TAG main
+)
+
+FetchContent_MakeAvailable(integermath)
+
+target_link_libraries(your_target PRIVATE integermath)
 ```
